@@ -19,10 +19,13 @@ $data_fim = $ano_selecionado . '-' . str_pad($mes_selecionado, 2, '0', STR_PAD_L
 
 // Consultando as transações de receitas e despesas para o mês e ano selecionados
 $query = "
-    SELECT * FROM transacoes 
-    WHERE user_id = ? 
-    AND data BETWEEN ? AND ? 
-    ORDER BY data DESC
+    SELECT t.*, c.nome AS categoria_nome
+FROM transacoes t
+LEFT JOIN categorias c ON t.categoria_id = c.id
+WHERE t.user_id = ?
+AND t.data BETWEEN ? AND ?
+ORDER BY t.data DESC
+
 ";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$user_id, $data_inicio, $data_fim]);
@@ -33,25 +36,27 @@ $total_receitas = 0;
 $total_despesas = 0;
 $categorias_despesa = [];
 $categorias_receita = [];
-$tipos = ['receita' => 0, 'despesa' => 0];
 
 foreach ($transacoes as $transacao) {
+    $nome_categoria = $transacao['categoria_nome'] ?? 'Sem categoria';
+
     if ($transacao['tipo'] === 'receita') {
         $total_receitas += $transacao['valor'];
-        if (!isset($categorias_receita[$transacao['categoria_id']])) {
-            $categorias_receita[$transacao['categoria_id']] = 0;
+        if (!isset($categorias_receita[$nome_categoria])) {
+            $categorias_receita[$nome_categoria] = 0;
         }
-        $categorias_receita[$transacao['categoria_id']] += $transacao['valor'];
+        $categorias_receita[$nome_categoria] += $transacao['valor'];
         $tipos['receita'] += $transacao['valor'];
     } elseif ($transacao['tipo'] === 'despesa') {
         $total_despesas += $transacao['valor'];
-        if (!isset($categorias_despesa[$transacao['categoria_id']])) {
-            $categorias_despesa[$transacao['categoria_id']] = 0;
+        if (!isset($categorias_despesa[$nome_categoria])) {
+            $categorias_despesa[$nome_categoria] = 0;
         }
-        $categorias_despesa[$transacao['categoria_id']] += $transacao['valor'];
+        $categorias_despesa[$nome_categoria] += $transacao['valor'];
         $tipos['despesa'] += $transacao['valor'];
     }
 }
+
 
 // Preparando os dados para os gráficos
 $labels_tipos = array_keys($tipos);
@@ -280,7 +285,7 @@ $dados_receitas = array_values($categorias_receita);
                         <?php foreach ($transacoes as $transacao): ?>
                             <tr>
                                 <td><?= date('d/m/Y', strtotime($transacao['data'])) ?></td>
-                                <td><?= htmlspecialchars($transacao['categoria_id']) ?></td>
+                                <td><?= htmlspecialchars($transacao['categoria_nome'] ?? 'Sem categoria') ?></td>
                                 <td><?= htmlspecialchars($transacao['descricao']) ?></td>
                                 <td>R$ <?= number_format($transacao['valor'], 2, ',', '.') ?></td>
                                 <td><?= ucfirst($transacao['tipo']) ?></td>
