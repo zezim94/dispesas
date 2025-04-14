@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Enviar email com link de reset
         $apiUrl = "https://php-py-xwtc.onrender.com/api/enviar_email";
-        $link = "localhost/novo_dispesas/redefinir_senha.php?token=$token";
+        $link = "https://dispesas.onrender.com/redefinir_senha.php?token=$token";
 
         $postData = [
             'destinatarios' => $email,

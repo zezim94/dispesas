@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Monta o link de redefinição
     $apiUrl = "https://php-py-xwtc.onrender.com/api/enviar_email";
-    $link = "localhost/novo_dispesas/redefinir_senha.php?token=$token";
+    $link = "https://dispesas.onrender.com/redefinir_senha.php?token=$token";
     $mensagem = "Olá <strong>$nome</strong>,<br><br>Sua conta foi ativada com sucesso!<br>
     Clique no link abaixo para definir sua senha de acesso:<br><br>
     <a href='$link'>$link</a><br><br>Este link expira em 1 hora.";

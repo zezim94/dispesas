@@ -1,11 +1,18 @@
-# Use a imagem oficial do PHP com Apache
-FROM php:8.2-apache
+FROM php:8.1-apache
 
-# Instala extensões (por exemplo: mysqli, pdo_mysql, curl)
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+RUN apt-get update && apt-get install -y \
+    git zip unzip curl libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql mysqli \
+    && docker-php-ext-enable pdo_mysql
 
-# Copia todos os arquivos para a pasta pública do Apache
-COPY . /var/www/html/
+# Instala o Composer
+COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
-# Ativa o mod_rewrite (opcional, para URL amigável)
-RUN a2enmod rewrite
+WORKDIR /var/www/html
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --prefer-dist --no-progress
+
+COPY . .
+
+EXPOSE 80
