@@ -36,6 +36,7 @@ $total_receitas = 0;
 $total_despesas = 0;
 $categorias_despesa = [];
 $categorias_receita = [];
+$tipos = ['receita' => 0, 'despesa' => 0];
 
 foreach ($transacoes as $transacao) {
     $nome_categoria = $transacao['categoria_nome'] ?? 'Sem categoria';
