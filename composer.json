@@ -1,0 +1,15 @@
+{
+    "name": "relatoriom/novo_sistema",
+    "description": "sistema de financas",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "zezim94",
+            "email": "andelsonascimento@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
