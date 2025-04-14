@@ -7,22 +7,28 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Obter as categorias do banco de dados
-$stmt = $pdo->prepare("SELECT * FROM categorias");
-$stmt->execute();
+$user_id = (int) $_SESSION['user_id'];
+
+// Obter apenas as categorias do usuário autenticado
+$stmt = $pdo->prepare("SELECT id, nome FROM categorias WHERE user_id = ? ORDER BY nome");
+$stmt->execute([$user_id]);
 $categorias = $stmt->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $descricao = $_POST['descricao'];
     $valor = $_POST['valor'];
     $tipo = $_POST['tipo'];
-    $categoria = $_POST['categoria'];
+    $categoria = $_POST['categoria_id'];
     $data = $_POST['data'];
-    $user_id = $_SESSION['user_id'];
+    $meses = (int) $_POST['quantidade_meses'];
 
-    // Inserir a transação no banco de dados
-    $stmt = $pdo->prepare("INSERT INTO transacoes (user_id, descricao, valor, tipo, categoria, data) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$user_id, $descricao, $valor, $tipo, $categoria, $data]);
+    $dataAtual = new DateTime($data);
+    
+    for ($i = 0; $i < $meses; $i++) {
+        $stmt = $pdo->prepare("INSERT INTO transacoes (user_id, descricao, valor, tipo, categoria_id, data) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$user_id, $descricao, $valor, $tipo, $categoria, $dataAtual->format('Y-m-d')]);
+        $dataAtual->modify('+1 month');
+    }
 
     header('Location: index.php');
     exit;
@@ -53,26 +59,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <div class="form-group">
             <label for="tipo">Tipo</label>
-            <select class="form-control" name="tipo" id="tipo" onchange="toggleCategoria()" required>
+            <select class="form-control" name="tipo" id="tipo" required>
                 <option value="receita">Receita</option>
                 <option value="despesa">Despesa</option>
             </select>
         </div>
-        <div class="form-group" id="categoria-container">
-    <label for="categoria">Categoria</label>
-    <select class="form-control" name="categoria" id="categoria">
-        <!-- As categorias serão carregadas dinamicamente do banco de dados -->
-        <?php foreach ($categorias as $categoria): ?>
-            <option value="<?= htmlspecialchars($categoria['nome']) ?>"><?= htmlspecialchars($categoria['nome']) ?></option>
-        <?php endforeach; ?>
-    </select>
-    <a href="adicionar_categoria.php" class="btn btn-link mt-2">Nova Categoria</a> <!-- Botão Nova Categoria -->
-</div>
-
         <div class="form-group">
-            <label for="data">Data</label>
+            <label for="categoria">Categoria</label>
+            <select class="form-control" name="categoria_id" id="categoria">
+                <?php foreach ($categorias as $categoria): ?>
+                    <option value="<?= htmlspecialchars($categoria['id']) ?>"><?= htmlspecialchars($categoria['nome']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <a href="adicionar_categoria.php" class="btn btn-success btn-sm mt-2">
+                <i class="fas fa-plus"></i> Nova Categoria
+            </a>
+        </div>
+        <div class="form-group">
+            <label for="data">Data Inicial</label>
             <input type="date" class="form-control" name="data" id="data" required>
         </div>
+        <div class="form-group">
+    <label for="quantidade_meses">Inserir por quantos meses?</label>
+    <input type="number" class="form-control" name="quantidade_meses" id="quantidade_meses" min="1" value="1" required>
+</div>
+
         <button type="submit" class="btn btn-primary mt-3">Adicionar</button>
     </form>
 
