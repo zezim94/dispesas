@@ -15,14 +15,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bairro = $_POST['bairro'];
     $cidade = $_POST['cidade'];
     $estado = $_POST['estado'];
-    $status = 'Pendente';
-    $total = 0.00;
+    $status = 'Pendente';  // Status inicial
+    $total = 0.00; // Valor total do pedido (definido inicialmente como 0.00)
 
     // Inserindo o pedido diretamente na tabela de pedidos
     $stmt = $pdo->prepare("INSERT INTO pedidos (nome, telefone, email, cpf, cep, endereco, numero, complemento, bairro, cidade, estado, status, total) 
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
     if ($stmt->execute([$nome, $telefone, $email, $cpf, $cep, $endereco, $numero, $complemento, $bairro, $cidade, $estado, $status, $total])) {
-        header('Location: login.php');
+        header('Location: login.php'); // Redireciona após inserir o pedido
         exit;
     } else {
         $erro = "Erro ao registrar pedido.";
@@ -32,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -130,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="login.php">Já tem conta? Faça login</a>
         </div>
          <div class="text-center mt-3">
-            <a href="politica_privacidade.php">Politica de privacidade</a>
+            <a href="politica_privacidade.php">Política de privacidade</a>
         </div>
     </div>
 </div>
@@ -194,5 +197,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
