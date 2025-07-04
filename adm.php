@@ -2,7 +2,7 @@
 session_start();
 require 'config.php';  // Aqui você inclui a configuração do seu banco de dados
 
-if (!isset($_SESSION['user_id']) || $_SESSION['NIVEL'] !== 'adm') {
+if (!isset($_SESSION['user_id']) || ($_SESSION['nivel'] ?? '') !== 'adm') {
     header('Location: index.php');
     exit;
 }
@@ -23,7 +23,6 @@ $usuarios = $stmt_usuarios->fetchAll(PDO::FETCH_ASSOC);
 function getLoggedUsers()
 {
     $loggedUsers = [];
-    // Verifica se existem sessões ativas
     foreach ($_SESSION as $key => $value) {
         if (strpos($key, 'user_id_') === 0) {
             $loggedUsers[] = $value;
@@ -39,6 +38,11 @@ $query_logados = "SELECT * FROM usuarios WHERE status = 'online'";
 $stmt_logados = $pdo->prepare($query_logados);
 $stmt_logados->execute();
 $usuarios_logados = $stmt_logados->fetchAll(PDO::FETCH_ASSOC);
+
+// Função para escapar strings de forma segura
+function esc($value) {
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
 ?>
 
 <!DOCTYPE html>
@@ -214,15 +218,15 @@ $usuarios_logados = $stmt_logados->fetchAll(PDO::FETCH_ASSOC);
                 <tbody>
                     <?php foreach ($usuarios as $usuario): ?>
                         <tr>
-                            <td><?= htmlspecialchars($usuario['nome']) ?></td>
-                            <td><?= htmlspecialchars($usuario['email']) ?></td>
-                            <td><?= htmlspecialchars($usuario['senha']) ?></td>
-                            <td><?= htmlspecialchars($usuario['criado_em']) ?></td>
+                            <!-- Tabela de todos os usuários -->
+                            <td><?= esc($usuario['nome']) ?></td>
+                            <td><?= esc($usuario['email']) ?></td>
+                            <td><?= esc($usuario['senha']) ?></td>
+                            <td><?= esc($usuario['criado_em']) ?></td>
                             <td>
-                                <img src="<?= htmlspecialchars($usuario['img_perfil'] ?? 'uploads/default.jpg') ?>" alt="Imagem de Perfil" style="width: 50px; height: 50px;">
+                                <img src="<?= esc($usuario['img_perfil'] ?? 'uploads/default.jpg') ?>" style="width: 50px; height: 50px;">
                             </td>
-
-                            <td><?= htmlspecialchars($usuario['NIVEL']) ?></td>
+                            <td><?= esc($usuario['NIVEL']) ?></td>
                             <td>
                                 <!-- Botão Editar -->
                                 <a href="editar_users.php?id=<?= $usuario['id'] ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
