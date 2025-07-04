@@ -5,7 +5,9 @@ FROM php:8.1-apache
 RUN apt-get update && apt-get install -y \
     git zip unzip curl libzip-dev \
     && docker-php-ext-install pdo pdo_mysql mysqli \
-    && docker-php-ext-enable pdo_mysql
+    && docker-php-ext-enable pdo_mysql \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Instala o Composer (copia a versão do Composer)
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
