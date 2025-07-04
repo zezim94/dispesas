@@ -10,9 +10,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['NIVEL'] !== 'adm') {
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
     // Consulta para pegar os dados do usuário
-    $query_usuario = "SELECT * FROM usuarios WHERE id = ?";
+    $query_usuario = "SELECT * FROM usuarios WHERE id = :id";
     $stmt_usuario = $pdo->prepare($query_usuario);
-    $stmt_usuario->execute([$id]);
+    $stmt_usuario->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt_usuario->execute();
     $usuario = $stmt_usuario->fetch(PDO::FETCH_ASSOC);
 
     if (!$usuario) {
@@ -55,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $new_file_name = uniqid() . '.' . $file_ext;
             $file_path = $upload_dir . $new_file_name;
 
-            // Mova o arquivo para o diretório de uploads
+            // Mova o arquivo para a pasta de uploads
             if (move_uploaded_file($file_tmp, $file_path)) {
                 // Atualize o caminho da imagem no banco de dados
                 $img_perfil = $file_path;
@@ -70,9 +71,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Atualiza as informações no banco
-    $query_update = "UPDATE usuarios SET nome = ?, email = ?, senha = ?, NIVEL = ?, img_perfil = ? WHERE id = ?";
+    $query_update = "UPDATE usuarios SET nome = :nome, email = :email, senha = :senha, NIVEL = :nivel, img_perfil = :img_perfil WHERE id = :id";
     $stmt_update = $pdo->prepare($query_update);
-    $stmt_update->execute([$nome, $email, $senha, $nivel, $img_perfil, $id]);
+
+    // Bind dos parâmetros para a query de atualização
+    $stmt_update->bindParam(':nome', $nome);
+    $stmt_update->bindParam(':email', $email);
+    $stmt_update->bindParam(':senha', $senha);
+    $stmt_update->bindParam(':nivel', $nivel);
+    $stmt_update->bindParam(':img_perfil', $img_perfil);
+    $stmt_update->bindParam(':id', $id, PDO::PARAM_INT);
+
+    $stmt_update->execute();
 
     header('Location: admin.php');  // Redireciona para a página de administração
     exit;
