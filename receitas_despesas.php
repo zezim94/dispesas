@@ -2,6 +2,7 @@
 session_start();
 require 'config.php';
 
+// Verifica se o usuário está autenticado
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
@@ -89,7 +90,7 @@ $despesas = $stmt_despesas->fetchAll(PDO::FETCH_ASSOC);
                 <table id="tabela-receitas" class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                        <th>Data</th>
+                            <th>Data</th>
                             <th>Categoria</th>
                             <th>Descrição</th>
                             <th>Valor</th>
