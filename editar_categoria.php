@@ -17,7 +17,7 @@ $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->execute();
 
 // Armazena as categorias obtidas
-$categorias = $stmt->fetchAll();
+$categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
