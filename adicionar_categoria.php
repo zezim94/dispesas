@@ -13,22 +13,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
 
     // Verificar se a categoria já existe para o usuário logado
-    $stmt = $pdo->prepare("SELECT id FROM categorias WHERE nome = ? AND user_id = ?");
-    $stmt->execute([$categoria, $user_id]);
+    $stmt = $pdo->prepare("SELECT id FROM categorias WHERE nome = :nome AND user_id = :user_id");
+    $stmt->bindParam(':nome', $categoria);
+    $stmt->bindParam(':user_id', $user_id);
+    $stmt->execute();
     
     if ($stmt->rowCount() > 0) {
         $erro = "Categoria já existe!";
     } else {
-        $stmt = $pdo->prepare("INSERT INTO categorias (nome, user_id) VALUES (?, ?)");
-        $stmt->execute([$categoria, $user_id]);
+        $stmt = $pdo->prepare("INSERT INTO categorias (nome, user_id) VALUES (:nome, :user_id)");
+        $stmt->bindParam(':nome', $categoria);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
         header('Location: adicionar.php');
         exit();
     }
 }
 
 // Buscar categorias para exibição
-$stmt = $pdo->prepare("SELECT * FROM categorias WHERE user_id = ?");
-$stmt->execute([$_SESSION['user_id']]);
+$stmt = $pdo->prepare("SELECT * FROM categorias WHERE user_id = :user_id");
+$stmt->bindParam(':user_id', $_SESSION['user_id']);
+$stmt->execute();
 $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
