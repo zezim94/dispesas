@@ -1,25 +1,31 @@
 <?php
 session_start();
 
-require "config.php";
+require "config.php";  // Certifique-se de que a configuração do banco de dados esteja correta.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
 
-    $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
-    $stmt->execute([$email]);
+    // Consultar o usuário pelo e-mail fornecido
+    $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = :email");
+    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+    $stmt->execute();
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($usuario) {
         $usuario_id = $usuario['id'];
-        $token = bin2hex(random_bytes(32));
-        $expira_em = date('Y-m-d H:i:s', time() + 3600); // 1 hora
+        $token = bin2hex(random_bytes(32));  // Gerar um token seguro
+        $expira_em = date('Y-m-d H:i:s', time() + 3600);  // Token expira em 1 hora
 
-        $stmt2 = $pdo->prepare("INSERT INTO tokens_reset (usuario_id, token, expira_em) VALUES (?, ?, ?)");
-        $stmt2->execute([$usuario_id, $token, $expira_em]);
+        // Inserir o token no banco de dados
+        $stmt2 = $pdo->prepare("INSERT INTO tokens_reset (usuario_id, token, expira_em) VALUES (:usuario_id, :token, :expira_em)");
+        $stmt2->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+        $stmt2->bindParam(':token', $token, PDO::PARAM_STR);
+        $stmt2->bindParam(':expira_em', $expira_em, PDO::PARAM_STR);
+        $stmt2->execute();
 
-        // Enviar email com link de reset
-        $apiUrl = "https://php-py-xwtc.onrender.com/api/enviar_email";
+        // Enviar o e-mail de recuperação
+        $apiUrl = "https://php-py-xwtc.onrender.com/api/enviar_email";  // API externa para enviar e-mail
         $link = "https://dispesas.onrender.com/redefinir_senha.php?token=$token";
 
         $postData = [
@@ -41,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="pt-br">
