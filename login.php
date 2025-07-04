@@ -1,23 +1,20 @@
 <?php
 session_start();
-require 'config.php';
+require 'config.php'; // Aqui você já deve ter o código de conexão com PostgreSQL
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $senha = $_POST['senha'];
 
     // Consulta para pegar o id, senha e nível do usuário
-    $stmt = $pdo->prepare("SELECT id, senha, nivel FROM usuarios WHERE email = ?");
-    $stmt->execute([$email]);
+    $stmt = $pdo->prepare("SELECT id, senha, nivel FROM usuarios WHERE email = :email");
+    $stmt->execute(['email' => $email]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($usuario && password_verify($senha, $usuario['senha'])) {
         // Armazena os dados do usuário na sessão
         $_SESSION['user_id'] = $usuario['id'];  // Armazena o ID do usuário
         $_SESSION['NIVEL'] = $usuario['nivel'];  // Armazena o nível do usuário na sessão
-
-        // Depuração - verificar se o nível foi armazenado corretamente
-        // var_dump($_SESSION); exit; // Descomente para depuração
 
         // Redireciona para a página do administrador ou para a página normal
         if ($_SESSION['NIVEL'] === 'adm') {
