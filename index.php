@@ -10,21 +10,19 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Obtendo nome, imagem do usuário e nível (admin ou não)
-$query_usuario = "SELECT * FROM usuarios WHERE id = ?";
+$query_usuario = "SELECT * FROM usuarios WHERE id = :user_id";
 $stmt_usuario = $pdo->prepare($query_usuario);
-$stmt_usuario->execute([$user_id]);
+$stmt_usuario->execute(['user_id' => $user_id]);
 $usuario = $stmt_usuario->fetch(PDO::FETCH_ASSOC);
-
 
 $nome_usuario = $usuario['nome'] ?? 'Usuário';
 $img_perfil = $usuario['img_perfil'] ?? null;
 $nivel_usuario = $usuario['NIVEL'] ?? 'user';
-// Se o nível do usuário for admin, a opção "ADM" será exibida no menu
 
 // Atualizando o status do usuário para "online" ao fazer login
-$query_login = "UPDATE usuarios SET status = 'online' WHERE id = ?";
+$query_login = "UPDATE usuarios SET status = 'online' WHERE id = :user_id";
 $stmt_login = $pdo->prepare($query_login);
-$stmt_login->execute([$user_id]);
+$stmt_login->execute(['user_id' => $user_id]);
 
 // Variáveis para filtrar
 $data_inicio = $_POST['data_inicio'] ?? '';
@@ -34,16 +32,17 @@ $data_fim = $_POST['data_fim'] ?? '';
 $query = "SELECT t.*, c.nome AS categoria_nome 
           FROM transacoes t 
           LEFT JOIN categorias c ON t.categoria_id = c.id
-          WHERE t.user_id = ?";
-$params = [$user_id];
+          WHERE t.user_id = :user_id";
+
+$params = ['user_id' => $user_id];
 
 if ($data_inicio) {
-    $query .= " AND t.data >= ?";
-    $params[] = $data_inicio;
+    $query .= " AND t.data >= :data_inicio";
+    $params['data_inicio'] = $data_inicio;
 }
 if ($data_fim) {
-    $query .= " AND t.data <= ?";
-    $params[] = $data_fim;
+    $query .= " AND t.data <= :data_fim";
+    $params['data_fim'] = $data_fim;
 }
 
 $query .= " ORDER BY t.data DESC";
@@ -52,9 +51,12 @@ $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $transacoes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$query_saldo = "SELECT SUM(CASE WHEN tipo = 'receita' THEN valor ELSE -valor END) AS saldo FROM transacoes WHERE user_id = ?";
+// Query para calcular o saldo
+$query_saldo = "SELECT SUM(CASE WHEN tipo = 'receita' THEN valor ELSE -valor END) AS saldo 
+                FROM transacoes 
+                WHERE user_id = :user_id";
 $stmt_saldo = $pdo->prepare($query_saldo);
-$stmt_saldo->execute([$user_id]);
+$stmt_saldo->execute(['user_id' => $user_id]);
 $saldo = $stmt_saldo->fetch(PDO::FETCH_ASSOC)['saldo'] ?? 0;
 ?>
 <!DOCTYPE html>
