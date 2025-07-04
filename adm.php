@@ -192,7 +192,7 @@ function esc($value) {
                                 <td>" . htmlspecialchars($logado['email']) . "</td>
                                 <td>" . htmlspecialchars($logado['status']) . "</td>
                                 <td><img src='" . htmlspecialchars($logado['img_perfil']) . "' alt='Imagem de Perfil' style='width: 50px; height: 50px;'></td>
-                                <td>" . htmlspecialchars($logado['NIVEL']) . "</td>
+                                <td>" . htmlspecialchars($logado['nivel']) . "</td>
                               </tr>";
                         }
                     }
@@ -226,7 +226,7 @@ function esc($value) {
                             <td>
                                 <img src="<?= esc($usuario['img_perfil'] ?? 'uploads/default.jpg') ?>" style="width: 50px; height: 50px;">
                             </td>
-                            <td><?= esc($usuario['NIVEL']) ?></td>
+                            <td><?= esc($usuario['nivel']) ?></td>
                             <td>
                                 <!-- Botão Editar -->
                                 <a href="editar_users.php?id=<?= $usuario['id'] ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
