@@ -20,15 +20,18 @@ $data_fim = $ano_selecionado . '-' . str_pad($mes_selecionado, 2, '0', STR_PAD_L
 // Consultando as transações de receitas e despesas para o mês e ano selecionados
 $query = "
     SELECT t.*, c.nome AS categoria_nome
-FROM transacoes t
-LEFT JOIN categorias c ON t.categoria_id = c.id
-WHERE t.user_id = ?
-AND t.data BETWEEN ? AND ?
-ORDER BY t.data DESC
-
+    FROM transacoes t
+    LEFT JOIN categorias c ON t.categoria_id = c.id
+    WHERE t.user_id = :user_id
+    AND t.data BETWEEN :data_inicio AND :data_fim
+    ORDER BY t.data DESC
 ";
 $stmt = $pdo->prepare($query);
-$stmt->execute([$user_id, $data_inicio, $data_fim]);
+$stmt->execute([
+    ':user_id' => $user_id, 
+    ':data_inicio' => $data_inicio, 
+    ':data_fim' => $data_fim
+]);
 $transacoes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Calculando o total de receitas e despesas
@@ -57,7 +60,6 @@ foreach ($transacoes as $transacao) {
         $tipos['despesa'] += $transacao['valor'];
     }
 }
-
 
 // Preparando os dados para os gráficos
 $labels_tipos = array_keys($tipos);
