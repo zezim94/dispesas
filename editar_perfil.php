@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':email', $_SESSION['email']);
             $stmt->bindParam(':senha', $_SESSION['senha']);
             $stmt->bindParam(':img_perfil', $_SESSION['foto']);
-            $stmt->bindParam(':id', $_SESSION['user_id']);
+            $stmt->bindParam(':id', $_SESSION['user_id'], PDO::PARAM_INT);
 
             // Executa a query
             $stmt->execute();
