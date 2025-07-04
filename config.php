@@ -26,10 +26,13 @@ $options = [
 try {
     // Cria a conexão com o banco de dados
     $pdo = new PDO($dsn, $user, $pass, $options);
+    // No caso de sucesso, a conexão é feita sem "echo"
+    // Não envia nenhuma mensagem para o navegador ou logs, para evitar problemas com headers.
     $conn = $pdo;
-    echo "Conexão bem-sucedida com o PostgreSQL!";
 } catch (\PDOException $e) {
     // Captura o erro caso a conexão falhe
-    echo "Erro na conexão com o banco de dados: " . $e->getMessage();
+    // Aqui, você pode registrar o erro em um log de erro e não exibi-lo diretamente
+    error_log("Erro na conexão com o banco de dados: " . $e->getMessage()); // Registra no log de erros do servidor
+    echo "Erro na conexão com o banco de dados."; // Mensagem genérica para o usuário
     exit;
 }
