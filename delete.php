@@ -9,8 +9,10 @@ if (!isset($_SESSION['user_id'])) {
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
-    $stmt = $pdo->prepare("SELECT * FROM transacoes WHERE id = ? AND user_id = ?");
-    $stmt->execute([$id, $_SESSION['user_id']]);
+    
+    // Verificando a transação no banco
+    $stmt = $pdo->prepare("SELECT * FROM transacoes WHERE id = :id AND user_id = :user_id");
+    $stmt->execute(['id' => $id, 'user_id' => $_SESSION['user_id']]);
     $transacao = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$transacao) {
@@ -21,8 +23,8 @@ if (isset($_GET['id'])) {
     // Caso o usuário já tenha confirmado a exclusão
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Excluindo a transação
-        $stmt = $pdo->prepare("DELETE FROM transacoes WHERE id = ? AND user_id = ?");
-        $stmt->execute([$id, $_SESSION['user_id']]);
+        $stmt = $pdo->prepare("DELETE FROM transacoes WHERE id = :id AND user_id = :user_id");
+        $stmt->execute(['id' => $id, 'user_id' => $_SESSION['user_id']]);
 
         header('Location: index.php');
         exit;
@@ -90,7 +92,7 @@ if (isset($_GET['id'])) {
     <div class="confirmation-container">
         <h2>Confirmar Exclusão</h2>
 
-        <p>Tem certeza de que deseja excluir a transação "<?php echo $transacao['descricao']; ?>"?</p>
+        <p>Tem certeza de que deseja excluir a transação "<?php echo htmlspecialchars($transacao['descricao']); ?>"?</p>
 
         <form method="POST">
             <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
