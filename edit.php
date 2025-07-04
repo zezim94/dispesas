@@ -7,17 +7,22 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Verificar se foi passado o ID da transação via GET
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
 
-    $stmt = $pdo->prepare("SELECT * FROM transacoes WHERE id = ? AND user_id = ?");
-    $stmt->execute([$id, $_SESSION['user_id']]);
-    $transacao = $stmt->fetch();
+    // Buscar a transação com base no ID e no user_id
+    $stmt = $pdo->prepare("SELECT * FROM transacoes WHERE id = :id AND user_id = :user_id");
+    $stmt->execute(['id' => $id, 'user_id' => $_SESSION['user_id']]);
+    $transacao = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$transacao) {
         header('Location: index.php');
         exit;
     }
+} else {
+    header('Location: index.php');
+    exit;
 }
 
 // Recuperar todas as categorias do banco de dados
@@ -25,6 +30,7 @@ $stmt_categorias = $pdo->prepare("SELECT * FROM categorias");
 $stmt_categorias->execute();
 $categorias = $stmt_categorias->fetchAll(PDO::FETCH_ASSOC);
 
+// Processar a edição da transação
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $descricao = $_POST['descricao'];
     $valor = $_POST['valor'];
@@ -32,9 +38,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria = $_POST['categoria'];
     $data = $_POST['data'];
 
-    $stmt = $pdo->prepare("UPDATE transacoes SET descricao = ?, valor = ?, tipo = ?, categoria = ?, data = ? WHERE id = ?");
-    $stmt->execute([$descricao, $valor, $tipo, $categoria, $data, $id]);
+    // Atualizar a transação
+    $stmt = $pdo->prepare("UPDATE transacoes SET descricao = :descricao, valor = :valor, tipo = :tipo, categoria_id = :categoria, data = :data WHERE id = :id AND user_id = :user_id");
+    $stmt->execute([
+        'descricao' => $descricao,
+        'valor' => $valor,
+        'tipo' => $tipo,
+        'categoria' => $categoria,
+        'data' => $data,
+        'id' => $id,
+        'user_id' => $_SESSION['user_id']
+    ]);
 
+    // Redirecionar após salvar
     header('Location: index.php');
     exit;
 }
