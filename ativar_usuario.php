@@ -26,9 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$usuario) {
         // Cria usuário com senha genérica (será redefinida depois)
         $senha_hash = password_hash('temporario', PASSWORD_BCRYPT);
-        $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha, nivel) VALUES (?, ?, ?, 'user')");
+        $stmt = $pdo->prepare("INSERT INTO usuarios (nome, email, senha, nivel) VALUES (?, ?, ?, 'user') RETURNING id");
         $stmt->execute([$nome, $email, $senha_hash]);
-        $usuario_id = $pdo->lastInsertId();
+        
+        // Obtém o id do usuário recém inserido usando o RETURNING
+        $usuario_id = $stmt->fetchColumn();
     } else {
         $usuario_id = $usuario['id'];
     }
@@ -45,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$usuario_id, $token, $expira_em]);
 
     // Monta o link de redefinição
-    $apiUrl = "https://php-py-xwtc.onrender.com/api/enviar_email";
     $link = "https://dispesas.onrender.com/redefinir_senha.php?token=$token";
     $mensagem = "Olá <strong>$nome</strong>,<br><br>Sua conta foi ativada com sucesso!<br>
     Clique no link abaixo para definir sua senha de acesso:<br><br>
@@ -57,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'mensagem' => $mensagem
     ];
 
+    $apiUrl = "https://php-py-xwtc.onrender.com/api/enviar_email";
     $ch = curl_init($apiUrl);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -66,3 +68,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     echo "Usuário ativado e link de redefinição de senha enviado para: $email";
 }
+?>
