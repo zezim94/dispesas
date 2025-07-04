@@ -21,9 +21,9 @@ $currentMonthStart = formatDate($currentMonth, $currentYear) . '-01';
 $currentMonthEnd = formatDate($currentMonth, $currentYear) . '-31';
 
 // Buscar transações do mês atual
-$query = "SELECT * FROM transacoes WHERE user_id = ? AND data BETWEEN ? AND ? ORDER BY data DESC";
+$query = "SELECT * FROM transacoes WHERE user_id = :user_id AND data BETWEEN :start_date AND :end_date ORDER BY data DESC";
 $stmt = $pdo->prepare($query);
-$stmt->execute([$user_id, $currentMonthStart, $currentMonthEnd]);
+$stmt->execute(['user_id' => $user_id, 'start_date' => $currentMonthStart, 'end_date' => $currentMonthEnd]);
 $transacoesAtual = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Verificar se foi enviado um mês selecionado
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mes'])) {
     $selectedMonthEnd = formatDate($mesSelecionado, $anoSelecionado) . '-31';
 
     // Buscar transações do mês selecionado
-    $stmt->execute([$user_id, $selectedMonthStart, $selectedMonthEnd]);
+    $stmt->execute(['user_id' => $user_id, 'start_date' => $selectedMonthStart, 'end_date' => $selectedMonthEnd]);
     $transacoesSelecionado = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
     // Caso não tenha sido selecionado, utilizar o mês atual como padrão
