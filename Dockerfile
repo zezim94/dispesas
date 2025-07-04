@@ -1,11 +1,11 @@
 # Usando a imagem oficial do PHP com Apache
 FROM php:8.1-apache
 
-# Instala dependências necessárias
+# Instala dependências necessárias para o PHP e PostgreSQL
 RUN apt-get update && apt-get install -y \
-    git zip unzip curl libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql mysqli \
-    && docker-php-ext-enable pdo_mysql \
+    git zip unzip curl libzip-dev libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql pdo_mysql mysqli \
+    && docker-php-ext-enable pdo_pgsql pdo_mysql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
