@@ -4,10 +4,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['NIVEL'] !== 'adm') {
     header('Location: login.php');  // Redireciona para a página de login ou página normal
     exit;
 }
-require 'config.php';
+
+require 'config.php'; // Aqui você deve incluir seu arquivo de configuração para conectar com o PostgreSQL
 
 // Consultar os pedidos no banco de dados
-$stmt = $pdo->prepare("SELECT * FROM pedidos");
+$stmt = $pdo->prepare("SELECT * FROM pedidos"); // Consultar os pedidos
 $stmt->execute();
 $pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
