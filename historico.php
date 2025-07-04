@@ -1,34 +1,51 @@
 <?php
 session_start();
+require "config.php"; // Certifique-se de que a configuração de conexão com o banco de dados esteja correta
 
-// Verifica se o histórico está vazio
-if (!isset($_SESSION['historico']) || empty($_SESSION['historico'])) {
-    echo "<p class='text-center mt-5'>Nenhuma jogada registrada ainda.</p>";
-    exit();
-}
-
-// Nome do jogador (pegar da última jogada)
-$ultimo_nome = $_SESSION['historico'][count($_SESSION['historico']) - 1]['nome'] ?? 'Desconhecido';
+// Verifica se há um nome do usuário na sessão (caso contrário, redireciona)
+$ultimo_nome = $_SESSION['nome_usuario'] ?? 'Desconhecido'; // Aqui você pode pegar o nome do usuário de algum lugar da sessão
 
 // Verifica se é para mostrar todo o histórico
 $mostrar_tudo = isset($_GET['tudo']);
 
-// Filtra o histórico para exibir apenas as jogadas do usuário (caso não tenha ativado "Mostrar Tudo")
-$historico_filtrado = $mostrar_tudo ? $_SESSION['historico'] : array_filter($_SESSION['historico'], function ($jogada) use ($ultimo_nome) {
-    return $jogada['nome'] === $ultimo_nome;
-});
-
 // Pesquisa de jogadas
 $pesquisa = $_GET['pesquisa'] ?? '';
+
+// Query básica para obter as jogadas
+$query = "SELECT * FROM historico_jogadas WHERE nome = :nome";
+
+// Adiciona filtro de pesquisa, se necessário
 if (!empty($pesquisa)) {
-    $historico_filtrado = array_filter($historico_filtrado, function ($jogada) use ($pesquisa) {
-        return stripos($jogada['jogada_usuario'], $pesquisa) !== false || stripos($jogada['resultado'], $pesquisa) !== false;
-    });
+    $query .= " AND (jogada_usuario ILIKE :pesquisa OR resultado ILIKE :pesquisa)";
 }
+
+// Verifica se deve exibir todo o histórico ou apenas o do último usuário
+if ($mostrar_tudo) {
+    $query = "SELECT * FROM historico_jogadas"; // Mostra todo o histórico
+}
+
+// Prepara a query
+$stmt = $pdo->prepare($query);
+
+// Liga os parâmetros da consulta
+$stmt->bindParam(':nome', $ultimo_nome, PDO::PARAM_STR);
+
+if (!empty($pesquisa)) {
+    $pesquisa = "%" . $pesquisa . "%";  // Adiciona os "%" para a busca parcial
+    $stmt->bindParam(':pesquisa', $pesquisa, PDO::PARAM_STR);
+}
+
+// Executa a consulta
+$stmt->execute();
+
+// Busca os resultados
+$historico_filtrado = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Limpar histórico ao clicar no botão
 if (isset($_POST['limpar'])) {
-    unset($_SESSION['historico']);
+    $stmt_delete = $pdo->prepare("DELETE FROM historico_jogadas WHERE nome = :nome");
+    $stmt_delete->bindParam(':nome', $ultimo_nome, PDO::PARAM_STR);
+    $stmt_delete->execute();
     header("Location: historico.php"); // Recarrega a página após limpar
     exit();
 }
@@ -71,10 +88,11 @@ if (isset($_POST['limpar'])) {
                 <a href="index.php" class="btn btn-info">Menu</a>
             </div>
             <div class="btn-group mb-2">
-                <button type="submit" name="limpar" class="btn btn-danger">Limpar Histórico</button>
+                <form method="POST">
+                    <button type="submit" name="limpar" class="btn btn-danger">Limpar Histórico</button>
+                </form>
             </div>
         </div>
-
 
         <table class="table table-striped">
             <thead class="table-dark">
@@ -89,11 +107,11 @@ if (isset($_POST['limpar'])) {
             <tbody>
                 <?php foreach ($historico_filtrado as $jogada): ?>
                     <tr>
-                        <td><?= htmlspecialchars($jogada['data_hora'] ?? '') ?></td>
-                        <td><?= htmlspecialchars($jogada['nome'] ?? '') ?></td>
-                        <td><?= ucfirst(htmlspecialchars($jogada['jogada_usuario'] ?? '')) ?></td>
-                        <td><?= ucfirst(htmlspecialchars($jogada['jogada_computador'] ?? '')) ?></td>
-                        <td><?= htmlspecialchars($jogada['resultado'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($jogada['data_hora']) ?></td>
+                        <td><?= htmlspecialchars($jogada['nome']) ?></td>
+                        <td><?= ucfirst(htmlspecialchars($jogada['jogada_usuario'])) ?></td>
+                        <td><?= ucfirst(htmlspecialchars($jogada['jogada_computador'])) ?></td>
+                        <td><?= htmlspecialchars($jogada['resultado']) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
