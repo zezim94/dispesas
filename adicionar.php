@@ -22,14 +22,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = $_POST['data'];
     $meses = (int) $_POST['quantidade_meses'];
 
+    // Convertendo a data para um formato que o PostgreSQL entende
     $dataAtual = new DateTime($data);
     
+    // Inserção de múltiplos registros para o número de meses
     for ($i = 0; $i < $meses; $i++) {
+        // Use prepared statements para evitar SQL Injection
         $stmt = $pdo->prepare("INSERT INTO transacoes (user_id, descricao, valor, tipo, categoria_id, data) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$user_id, $descricao, $valor, $tipo, $categoria, $dataAtual->format('Y-m-d')]);
-        $dataAtual->modify('+1 month');
+        $dataAtual->modify('+1 month'); // Incrementa 1 mês para o próximo loop
     }
 
+    // Redireciona para a página principal após adicionar
     header('Location: index.php');
     exit;
 }
@@ -80,14 +84,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="date" class="form-control" name="data" id="data" required>
         </div>
         <div class="form-group">
-    <label for="quantidade_meses">Inserir por quantos meses?</label>
-    <input type="number" class="form-control" name="quantidade_meses" id="quantidade_meses" min="1" value="1" required>
-</div>
+            <label for="quantidade_meses">Inserir por quantos meses?</label>
+            <input type="number" class="form-control" name="quantidade_meses" id="quantidade_meses" min="1" value="1" required>
+        </div>
 
         <button type="submit" class="btn btn-primary mt-3">Adicionar</button>
     </form>
 
     <a href="index.php" class="btn btn-secondary mt-3">Voltar</a>
 </div>
+
 </body>
 </html>
