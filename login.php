@@ -14,10 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($usuario && password_verify($senha, $usuario['senha'])) {
         // Armazena os dados do usuário na sessão
         $_SESSION['user_id'] = $usuario['id'];  // Armazena o ID do usuário
-        $_SESSION['NIVEL'] = $usuario['nivel'];  // Armazena o nível do usuário na sessão
+        $_SESSION['nivel'] = $usuario['nivel'];  // Armazena o nível do usuário na sessão
 
         // Redireciona para a página do administrador ou para a página normal
-        if ($_SESSION['NIVEL'] === 'adm') {
+        if ($_SESSION['nivel'] === 'adm') {
             header('Location: adm.php');  // Redireciona para a página do admin
         } else {
             header('Location: index.php');  // Redireciona para a página do usuário normal
