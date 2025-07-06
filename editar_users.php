@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Atualiza as informações no banco
-    $query_update = "UPDATE usuarios SET nome = :nome, email = :email, senha = :senha, NIVEL = :nivel, img_perfil = :img_perfil WHERE id = :id";
+    $query_update = "UPDATE usuarios SET nome = :nome, email = :email, senha = :senha, nivel = :nivel, img_perfil = :img_perfil WHERE id = :id";
     $stmt_update = $pdo->prepare($query_update);
 
     // Bind dos parâmetros para a query de atualização
@@ -119,8 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label for="nivel">Nível</label>
                 <select class="form-control" id="nivel" name="nivel" required>
-                    <option value="adm" <?= ($usuario['NIVEL'] === 'adm') ? 'selected' : '' ?>>Administrador</option>
-                    <option value="user" <?= ($usuario['NIVEL'] === 'user') ? 'selected' : '' ?>>Usuário</option>
+                    <option value="adm" <?= ($usuario['nivel'] === 'adm') ? 'selected' : '' ?>>Administrador</option>
+                    <option value="user" <?= ($usuario['nivel'] === 'user') ? 'selected' : '' ?>>Usuário</option>
                 </select>
             </div>
             <div class="form-group">
