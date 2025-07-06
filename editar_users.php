@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt_update->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt_update->execute();
 
-    header('Location: admin.php');
+    header('Location: adm.php');
     exit;
 }
 ?>
