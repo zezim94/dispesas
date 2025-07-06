@@ -2,7 +2,7 @@
 session_start();
 require 'config.php';  // Aqui você inclui a configuração do seu banco de dados
 
-if (!isset($_SESSION['user_id']) || $_SESSION['NIVEL'] !== 'adm') {
+if (!isset($_SESSION['user_id']) || $_SESSION['nivel'] !== 'adm') {
     header('Location: index.php');  // Redireciona para a página de login ou página normal
     exit;
 }
