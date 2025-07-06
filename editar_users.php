@@ -1,15 +1,16 @@
 <?php
 session_start();
-require 'config.php';  // Aqui você inclui a configuração do seu banco de dados
+require 'config.php'; // Conexão com banco de dados
 
+// Verifica se o usuário é administrador
 if (!isset($_SESSION['user_id']) || $_SESSION['nivel'] !== 'adm') {
-    header('Location: index.php');  // Redireciona para a página de login ou página normal
+    header('Location: index.php');
     exit;
 }
 
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
-    // Consulta para pegar os dados do usuário
+
     $query_usuario = "SELECT * FROM usuarios WHERE id = :id";
     $stmt_usuario = $pdo->prepare($query_usuario);
     $stmt_usuario->bindParam(':id', $id, PDO::PARAM_INT);
@@ -29,39 +30,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nivel = $_POST['nivel'];
     $senha = $_POST['senha'];
 
-    // Se a senha foi alterada, criamos o hash
-    if (!empty($senha)) {
-        $senha = password_hash($senha, PASSWORD_BCRYPT);  // Cria o hash da senha
-    } else {
-        // Se a senha não foi modificada, mantemos a senha atual
-        $senha = $usuario['senha'];  // Mantém a senha atual no banco de dados
-    }
+    $senha = !empty($senha) ? password_hash($senha, PASSWORD_BCRYPT) : $usuario['senha'];
+    $img_perfil = $usuario['img_perfil']; // padrão: manter imagem
 
-    // Processamento da foto de perfil
-    $img_perfil = $usuario['img_perfil']; // Mantém a imagem atual por padrão
+    // Processar nova imagem de perfil se enviada
     if (isset($_FILES['img_perfil']) && $_FILES['img_perfil']['error'] === UPLOAD_ERR_OK) {
-        // Verificar se a imagem é válida
         $file_tmp = $_FILES['img_perfil']['tmp_name'];
-        $file_name = $_FILES['img_perfil']['name'];
-        $file_size = $_FILES['img_perfil']['size'];
-        $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
-
-        // Defina as extensões permitidas
+        $file_ext = strtolower(pathinfo($_FILES['img_perfil']['name'], PATHINFO_EXTENSION));
         $allowed_exts = ['jpg', 'jpeg', 'png', 'gif'];
 
-        // Verifique se a extensão do arquivo é permitida
-        if (in_array(strtolower($file_ext), $allowed_exts)) {
-            // Defina o diretório onde a imagem será salva
-            $upload_dir = 'uploads/';
-            $new_file_name = uniqid() . '.' . $file_ext;
-            $file_path = $upload_dir . $new_file_name;
+        if (in_array($file_ext, $allowed_exts)) {
+            // Cloudinary API
+            $cloud_name = 'ddurjywqx';
+            $api_key = '292648758627711';
+            $api_secret = 'KJEYTdqQDh_0QFphlQnrBbW1_mM';
+            $timestamp = time();
 
-            // Mova o arquivo para a pasta de uploads
-            if (move_uploaded_file($file_tmp, $file_path)) {
-                // Atualize o caminho da imagem no banco de dados
-                $img_perfil = $file_path;
+            // Gera a assinatura
+            $params_to_sign = "timestamp=$timestamp" . $api_secret;
+            $signature = sha1($params_to_sign);
+
+            $post_fields = [
+                'file' => new CURLFile($file_tmp),
+                'api_key' => $api_key,
+                'timestamp' => $timestamp,
+                'signature' => $signature,
+            ];
+
+            $url = "https://api.cloudinary.com/v1_1/$cloud_name/image/upload";
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // opcional para local/dev
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $result = json_decode($response, true);
+
+            if (isset($result['secure_url'])) {
+                $img_perfil = $result['secure_url'];
             } else {
-                echo "Erro ao enviar a imagem!";
+                echo "Erro ao enviar a imagem para Cloudinary!";
                 exit;
             }
         } else {
@@ -70,24 +82,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Atualiza as informações no banco
+    // Atualizar no banco
     $query_update = "UPDATE usuarios SET nome = :nome, email = :email, senha = :senha, nivel = :nivel, img_perfil = :img_perfil WHERE id = :id";
     $stmt_update = $pdo->prepare($query_update);
-
-    // Bind dos parâmetros para a query de atualização
     $stmt_update->bindParam(':nome', $nome);
     $stmt_update->bindParam(':email', $email);
     $stmt_update->bindParam(':senha', $senha);
     $stmt_update->bindParam(':nivel', $nivel);
     $stmt_update->bindParam(':img_perfil', $img_perfil);
     $stmt_update->bindParam(':id', $id, PDO::PARAM_INT);
-
     $stmt_update->execute();
 
-    header('Location: admin.php');  // Redireciona para a página de administração
+    header('Location: admin.php');
     exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-br">
