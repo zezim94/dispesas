@@ -13,10 +13,7 @@ if (isset($_GET['id'])) {
     $query_usuario = "SELECT * FROM usuarios WHERE id = :id";
     $stmt_usuario = $pdo->prepare($query_usuario);
     $stmt_usuario->bindParam(':id', $id, PDO::PARAM_INT);
-    $stmt_usuario->execute();<?php
-session_start();
-require 'config.php';  // Configuração do banco de dados
-
+    $stmt_usuario->execute();
 // Função para upload no Imgur
 function uploadToImgur($file_tmp) {
     $client_id = 'https://imgur.com/a/YVpXmAr'; // Substitua pelo seu Client ID do Imgur
