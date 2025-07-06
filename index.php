@@ -17,7 +17,7 @@ $usuario = $stmt_usuario->fetch(PDO::FETCH_ASSOC);
 
 $nome_usuario = $usuario['nome'] ?? 'Usuário';
 $img_perfil = $usuario['img_perfil'] ?? null;
-$nivel_usuario = $usuario['NIVEL'] ?? 'user';
+$nivel_usuario = $usuario['nivel'] ?? 'user';
 
 // Atualizando o status do usuário para "online" ao fazer login
 $query_login = "UPDATE usuarios SET status = 'online' WHERE id = :user_id";
