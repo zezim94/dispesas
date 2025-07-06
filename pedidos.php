@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['NIVEL'] !== 'adm') {
+if (!isset($_SESSION['user_id']) || $_SESSION['nivel'] !== 'adm') {
     header('Location: login.php');  // Redireciona para a página de login ou página normal
     exit;
 }
