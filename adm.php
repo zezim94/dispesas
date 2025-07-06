@@ -8,9 +8,9 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['nivel'] ?? '') !== 'adm') {
 }
 
 // Consulta para obter o nome do usuário logado
-$query_usuario_logado = "SELECT nome FROM usuarios WHERE id = $1";
+$query_usuario_logado = "SELECT nome FROM usuarios WHERE id = :id";
 $stmt_usuario_logado = $pdo->prepare($query_usuario_logado);
-$stmt_usuario_logado->execute([$_SESSION['user_id']]);
+$stmt_usuario_logado->execute(['id' => $_SESSION['user_id']]);
 $usuario_logado = $stmt_usuario_logado->fetch(PDO::FETCH_ASSOC);
 
 // Consulta todos os usuários
