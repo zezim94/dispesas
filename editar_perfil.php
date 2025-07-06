@@ -7,7 +7,22 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: index.php"); // Redireciona para a página inicial se não estiver logado
     exit();
 }
+// Busca os dados do usuário no banco ao abrir a página
+try {
+    $stmt = $pdo->prepare("SELECT nome, email, img_perfil FROM usuarios WHERE id = :id");
+    $stmt->bindParam(':id', $_SESSION['user_id'], PDO::PARAM_INT);
+    $stmt->execute();
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    if ($usuario) {
+        $_SESSION['nome'] = $usuario['nome'];
+        $_SESSION['email'] = $usuario['email'];
+        $_SESSION['foto'] = $usuario['img_perfil'];
+    }
+} catch (PDOException $e) {
+    echo "Erro ao buscar os dados: " . $e->getMessage();
+    exit;
+}
 // Variáveis para armazenar mensagens de erro
 $erroNome = $erroEmail = $erroSenha = $erroConfirmarSenha = $erroFoto = '';
 
